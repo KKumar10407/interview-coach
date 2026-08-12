@@ -58,3 +58,9 @@ def list_sessions():
 @bp.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
+
+@bp.route("/questions/<int:question_id>", methods = ["GET"])
+def read_question(question_id):
+    question = Question.query.get_or_404(question_id)
+    return jsonify({"question": question.to_dict()})
+

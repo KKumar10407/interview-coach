@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
@@ -20,8 +20,7 @@ export default function Home() {
         body: JSON.stringify({ topic }),
       });
       const data = await res.json();
-      const q = encodeURIComponent(data.question.prompt);
-      router.push(`/session/${data.session.id}?questionId=${data.question.id}&q=${q}`);
+      router.push(`/session/${data.session.id}?questionId=${data.question.id}`);
     } catch (err) {
       console.error(err);
       alert("Could not start session -- is the Flask backend running on :5000?");

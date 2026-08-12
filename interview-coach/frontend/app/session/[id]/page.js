@@ -1,16 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
 
 export default function SessionPage({ params }) {
   const searchParams = useSearchParams();
+  
+
+
   const questionId = searchParams.get("questionId");
-  const questionText = searchParams.get("q") || "Loading question…";
+  //const questionText = searchParams.get("q") || "Loading question…";
 
   const [answer, setAnswer] = useState("");
+  const [question, setQuestion] = useState(null) //creates a new box called question and can fil it with setQuestion
   const [feedback, setFeedback] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,6 +37,16 @@ export default function SessionPage({ params }) {
     }
   }
 
+  async function fetchQuestion(){
+    const res = await fetch(`${API_BASE}/questions/${questionId}`)
+    const data = await res.json();
+    setQuestion(data.question);
+  }
+
+  useEffect(() => {
+    fetchQuestion();
+  }, [questionId])
+
   return (
     <main className="max-w-xl mx-auto pt-16 px-6">
       <a href="/" className="text-slate-500 text-sm hover:text-slate-300">
@@ -41,7 +55,8 @@ export default function SessionPage({ params }) {
 
       <div className="mt-6 mb-6 rounded-lg bg-slate-900 border border-slate-800 p-5">
         <p className="text-slate-500 text-sm mb-1">Question</p>
-        <p className="text-lg">{questionText}</p>
+        
+        <p className="text-lg">{question ? question.prompt : "Loading question..."}</p>
       </div>
 
       {!feedback ? (
