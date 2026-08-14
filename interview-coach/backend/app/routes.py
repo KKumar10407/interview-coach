@@ -64,3 +64,13 @@ def read_question(question_id):
     question = Question.query.get_or_404(question_id)
     return jsonify({"question": question.to_dict()})
 
+@bp.route("/sessions/<int:session_id>", methods = ["POST"])
+def create_new_question(session_id):
+    session = Session.query.get_or_404(session_id)
+
+    question_text = generate_question(session.topic)
+    question = Question(session_id=session.id, prompt=question_text)
+    db.session.add(question)
+    db.session.commit()
+
+    return jsonify(question.to_dict())
