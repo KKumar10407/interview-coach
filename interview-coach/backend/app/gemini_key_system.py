@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-MODEL = "gemini-flash-latest"  # free tier model
+MODEL = "gemini-3.5-flash-lite"  # free tier model
 
 
 def generate_question(topic: str) -> str:

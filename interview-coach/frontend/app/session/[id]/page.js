@@ -27,6 +27,11 @@ export default function SessionPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answer }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status ${res.status}`);
+      }
+
       const data = await res.json();
       setFeedback(data);
     } catch (err) {
@@ -41,6 +46,28 @@ export default function SessionPage({ params }) {
     const res = await fetch(`${API_BASE}/questions/${questionId}`)
     const data = await res.json();
     setQuestion(data.question);
+  }
+
+  async function nextQuestion(){
+    const sessionId = params.id
+    try {
+      const res = await fetch(`${API_BASE}/sessions/${sessionId}`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status ${res.status}`);
+      }
+
+      const data = await res.json();
+      setQuestion(data)
+      setAnswer("")
+      setFeedback(null)
+    } catch (err) {
+      console.error(err);
+      alert("Could not load next question -- check the Flask backend is running, or try again in a moment.");
+    } 
+
   }
 
   useEffect(() => {
@@ -90,6 +117,14 @@ export default function SessionPage({ params }) {
           <p className="text-slate-300">{feedback.feedback}</p>
         </div>
       )}
+
+      <button
+        onClick={nextQuestion}
+        className="w-full mt-4 rounded-lg bg-slate-800 text-slate-100 font-medium py-3 hover:bg-slate-700 transition"
+      >
+        {feedback ? "Next question" : "Skip"}
+      </button>
+
     </main>
   );
 }
