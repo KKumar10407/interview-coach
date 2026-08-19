@@ -14,12 +14,17 @@ def create_session():
 
     session = Session(topic=topic)
     db.session.add(session)
-    db.session.commit()
+    db.session.flush()
 
-    question_text = generate_question(topic)
-    question = Question(session_id=session.id, prompt=question_text)
-    db.session.add(question)
-    db.session.commit()
+    try:
+        question_text = generate_question(topic)
+        question = Question(session_id=session.id, prompt=question_text)
+        db.session.add(question)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+        return jsonify({"error": "Cannot generate question."}), 503
 
     return jsonify({"session": session.to_dict(), "question": question.to_dict()}), 201
 

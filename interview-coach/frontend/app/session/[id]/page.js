@@ -22,7 +22,7 @@ export default function SessionPage({ params }) {
     if (!answer.trim()) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/questions/${questionId}/answer`, {
+      const res = await fetch(`${API_BASE}/questions/${question.id}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answer }),
