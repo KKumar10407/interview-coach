@@ -86,7 +86,6 @@ export default function HistoryPage() {
                 onClick={() => setSelectedQ(null)}>
                 <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-lg w-full relative"
                 onClick={(e) => e.stopPropagation()}> 
-
                     <button
                         onClick={() => setSelectedQ(null)}
                         className="absolute top-4 right-4 text-slate-500 hover:text-slate-300"> 
@@ -97,24 +96,36 @@ export default function HistoryPage() {
 
                     <p className="text-slate-500 text-sm mb-1">Question</p>
                     <p className="text-slate-200 mb-4">{selectedQ.prompt}</p>
-                    <p className="text-slate-500 text-sm mt-4 mb-1">Answer</p>
-                    <p className="text-slate-200 mb-4">{selectedQ.answer_text}</p>
+                    {selectedQ.correctness_score == null ? (
+                        <>
+                            <p className="text-slate-300 mt-4">This question is incomplete.</p>
+                            <a
+                                href={`/session/${selectedQ.session_id}?questionId=${selectedQ.id}`}
+                                className
+                            >
+                            </a>
+                        </>
 
-                    <div className="flex gap-6 mb-3">
-                        <div>
-                            <p className="text-slate-500 text-xs">Correctness</p>
-                            <p className="text-x1 font-semibold">{selectedQ.correctness_score}/10</p>
+                    ) : (
+                    <>
+                        <p className="text-slate-500 text-sm mt-4 mb-1">Answer</p>
+                        <p className="text-slate-200 mb-4">{selectedQ.answer_text}</p>
+
+                        <div className="flex gap-6 mb-3">
+                            <div>
+                                <p className="text-slate-500 text-xs">Correctness</p>
+                                <p className="text-x1 font-semibold">{selectedQ.correctness_score}/10</p>
+                            </div>
+                            <div>
+                                <p className="text-slate-500 text-xs">Communication</p>
+                                <p className="text-x1 font-semibold">{selectedQ.communication_score}/10</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-slate-500 text-xs">Communication</p>
-                            <p className="text-x1 font-semibold">{selectedQ.communication_score}/10</p>
-                        </div>
-                    </div>
 
-                    <p className="text-slate-500 text-sm mb-1">Feedback</p>
-                    <p className="text-slate-300">{selectedQ.feedback}</p>
-
-
+                        <p className="text-slate-500 text-sm mb-1">Feedback</p>
+                        <p className="text-slate-300">{selectedQ.feedback}</p>
+                    </>
+                    )}
                 </div>
             </div>
         )}
