@@ -79,16 +79,17 @@ export default function HistoryPage() {
                 );
             })}
         </div>
-
+        
         {selectedQ && (
             <div
                 className="fixed inset-0 bg-black/60 flex items-center justify-center px-6 z-50"
                 onClick={() => setSelectedQ(null)}>
-                <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-lg w-full relative">
+                <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-lg w-full relative"
+                onClick={(e) => e.stopPropagation()}> 
 
                     <button
                         onClick={() => setSelectedQ(null)}
-                        className="absolute top-4 right-4 text-slate-500 hover:text-slate-300">
+                        className="absolute top-4 right-4 text-slate-500 hover:text-slate-300"> 
             
                             ❌
 
@@ -124,6 +125,8 @@ export default function HistoryPage() {
     </main>
     );
 }
+
+//note for later: stopPropogation helps it so that the popup doesnt close on contact. only clicking outside the box and on X would close it
 
     // return (
     //     <ul>
