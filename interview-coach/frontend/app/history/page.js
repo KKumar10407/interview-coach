@@ -7,8 +7,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api"
 
 export default function HistoryPage() {
     const [list, setList] = useState([]);
-    const [openSessions, setOpenSessions] = useState(new Set());   // ← new
-
+    const [openSessions, setOpenSessions] = useState(new Set()); 
+    const [selectedQ, setSelectedQ] = useState(null); 
 
     async function fetchAllSessions(){
         const res = await fetch(`${API_BASE}/sessions`)
@@ -67,20 +67,24 @@ export default function HistoryPage() {
                                                     {question.correctness_score}/10 &nbsp; {question.communication_score}/10
                                                 </span>
                                             )}
-
-                                            <span className="text-slate-500 hover:text-slate-300 cursor-pointer text-sm">
+                                        <button onClick{() => setSelectedQ(question)}
+                                            className="text-slate-500 hover:text-slate-300 cursor-pointer text-sm">
                                                 View
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-        </main>
-    );
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+
+
+
+        
+    </main>
+);
 }
 
     // return (
