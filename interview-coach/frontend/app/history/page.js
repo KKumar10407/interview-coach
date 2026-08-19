@@ -101,8 +101,9 @@ export default function HistoryPage() {
                             <p className="text-slate-300 mt-4">This question is incomplete.</p>
                             <a
                                 href={`/session/${selectedQ.session_id}?questionId=${selectedQ.id}`}
-                                className
+                                className="mt-4 block text-center rounded-lg bg-slate-100 text-slate-950 font-medium py-2.5 hover:bg-white transition"
                             >
+                                Continue?
                             </a>
                         </>
 
