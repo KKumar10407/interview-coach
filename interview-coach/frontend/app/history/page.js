@@ -67,7 +67,7 @@ export default function HistoryPage() {
                                                     {question.correctness_score}/10 &nbsp; {question.communication_score}/10
                                                 </span>
                                             )}
-                                        <button onClick{() => setSelectedQ(question)}
+                                        <button onClick={() => {setSelectedQ(question); console.log(selectedQ);}}
                                             className="text-slate-500 hover:text-slate-300 cursor-pointer text-sm">
                                                 View
                                         </button>
@@ -80,11 +80,19 @@ export default function HistoryPage() {
             })}
         </div>
 
+        {/* {selectedQ && (
 
 
-        
+
+
+
+        )} */}
+
+
+
+
     </main>
-);
+    );
 }
 
     // return (
