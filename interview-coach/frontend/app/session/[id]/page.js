@@ -7,16 +7,31 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api"
 
 export default function SessionPage({ params }) {
   const searchParams = useSearchParams();
-  
-
 
   const questionId = searchParams.get("questionId");
   //const questionText = searchParams.get("q") || "Loading question…";
 
-  const [answer, setAnswer] = useState("");
-  const [question, setQuestion] = useState(null) //creates a new box called question and can fil it with setQuestion
-  const [feedback, setFeedback] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(-1);
   const [submitting, setSubmitting] = useState(false);
+
+  const current = history[currentIndex] || null;
+  const question = current ? current.question : null;
+  const answer = current ? current.answer : "";
+  const feedback = current ? current.feedback : null;
+
+  //allows for the answer to be updated if we went back previously
+  function updateAnswer(newAnswer){
+    setHistory(prev =>
+      prev.map((entry, i) => (i === currentIndex ? {...entry, answer : newAnswer } : entry))
+    );
+  }
+
+  //Changing to normal constants to allow easy movement through the session history
+  // const [answer, setAnswer] = useState("");
+  // const [question, setQuestion] = useState(null) //creates a new box called question and can fil it with setQuestion
+  // const [feedback, setFeedback] = useState(null);
+  // const [submitting, setSubmitting] = useState(false);
 
   async function submitAnswer() {
     if (!answer.trim()) return;
@@ -33,7 +48,9 @@ export default function SessionPage({ params }) {
       }
 
       const data = await res.json();
-      setFeedback(data);
+      setHistory(prev =>
+        prev.map((entry, i) => (i === currentIndex ? {...entry, feedback: data} : entry))
+      );
     } catch (err) {
       console.error(err);
       alert("Could not submit answer -- check the Flask backend is running.");
@@ -45,10 +62,16 @@ export default function SessionPage({ params }) {
   async function fetchQuestion(){
     const res = await fetch(`${API_BASE}/questions/${questionId}`)
     const data = await res.json();
-    setQuestion(data.question);
+    setHistory([{question: data.question, answer: "", feedback: null}]);
+    setCurrentIndex(0); 
   }
 
   async function nextQuestion(){
+    if (currentIndex < history.length - 1){
+      setCurrentIndex(currentIndex + 1);
+      return; //ensures new question isn't generated
+    }
+    
     const sessionId = params.id
     try {
       const res = await fetch(`${API_BASE}/sessions/${sessionId}`, {
@@ -60,9 +83,8 @@ export default function SessionPage({ params }) {
       }
 
       const data = await res.json();
-      setQuestion(data)
-      setAnswer("")
-      setFeedback(null)
+      setHistory(prev => [...prev, { question: data, answer: "", feedback: null}]);
+      setCurrentIndex(currentIndex + 1);
     } catch (err) {
       console.error(err);
       alert("Could not load next question -- check the Flask backend is running, or try again in a moment.");
@@ -92,7 +114,7 @@ export default function SessionPage({ params }) {
             className="w-full h-40 rounded-lg bg-slate-900 border border-slate-800 px-4 py-3 mb-4 outline-none focus:border-slate-500"
             placeholder="Type your answer..."
             value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
+            onChange={(e) => updateAnswer(e.target.value)}
           />
           <button
             onClick={submitAnswer}
