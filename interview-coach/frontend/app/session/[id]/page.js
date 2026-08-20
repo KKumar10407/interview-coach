@@ -145,19 +145,20 @@ export default function SessionPage({ params }) {
           <p className="text-slate-300">{feedback.feedback}</p>
         </div>
       )}
-      <button
-        onClick={previousQuestion}
-        disabled={currentIndex <= 0}
-        className="w-full mt-4 rounded-lg bg-slate-800 text-slate-100 font-medium py-3 hover:bg-slate-700 transition">
-            Previous
+      <div className="flex gap-3 mt-4">
+        <button
+          onClick={previousQuestion}
+          disabled={currentIndex <= 0}
+          className="w-full mt-4 rounded-lg bg-slate-800 text-slate-100 font-medium py-3 hover:bg-slate-700 transition">
+              Previous
+          </button>
+        <button
+          onClick={nextQuestion}
+          className="w-full mt-4 rounded-lg bg-slate-800 text-slate-100 font-medium py-3 hover:bg-slate-700 transition"
+        >
+          {feedback ? "Next question" : "Skip"}
         </button>
-      <button
-        onClick={nextQuestion}
-        className="w-full mt-4 rounded-lg bg-slate-800 text-slate-100 font-medium py-3 hover:bg-slate-700 transition"
-      >
-        {feedback ? "Next question" : "Skip"}
-      </button>
-
+      </div>
     </main>
   );
 }
