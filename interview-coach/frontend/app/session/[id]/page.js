@@ -92,6 +92,12 @@ export default function SessionPage({ params }) {
 
   }
 
+  function previousQuestion(){
+    if (currentIndex > 0){
+      setCurrentIndex(currentIndex - 1);
+    }
+  }
+
   useEffect(() => {
     fetchQuestion();
   }, [questionId])
