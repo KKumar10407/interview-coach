@@ -9,6 +9,7 @@ export default function SessionPage({ params }) {
   const searchParams = useSearchParams();
 
   const questionId = searchParams.get("questionId");
+  const sessionId = params.id;
   //const questionText = searchParams.get("q") || "Loading question…";
 
   const [history, setHistory] = useState([]);
@@ -59,6 +60,23 @@ export default function SessionPage({ params }) {
     }
   }
 
+  async function fetchSession(){
+    const res = await fetch(`${API_BASE}/sessions/${sessionId}/full`)
+    const data = await res.json();
+
+    const currHistory = data.questions.map(q => ({
+      question: q,
+      answer: q.answer_text || "",
+      feedback: q.correctness_score == null ? null : q,
+    }));
+
+    setHistory(currHistory);
+
+    const initialIndex = currHistory.findIndex(entry => String(entry.question.id) === String(questionId));
+    setCurrentIndex(initialIndex !== -1 ? initialIndex : 0);
+  }
+
+
   async function fetchQuestion(){
     const res = await fetch(`${API_BASE}/questions/${questionId}`)
     const data = await res.json();
@@ -67,12 +85,14 @@ export default function SessionPage({ params }) {
   }
 
   async function nextQuestion(){
-    if (currentIndex < history.length - 1){
-      setCurrentIndex(currentIndex + 1);
-      return; //ensures new question isn't generated
+    for (let i = currentIndex + 1; i < history.length; i++){
+      if (history[i].question.correctness_score === null){
+        setCurrentIndex(i);
+        return;
+      }
     }
+
     
-    const sessionId = params.id
     try {
       const res = await fetch(`${API_BASE}/sessions/${sessionId}`, {
         method: "POST",
@@ -84,7 +104,7 @@ export default function SessionPage({ params }) {
 
       const data = await res.json();
       setHistory(prev => [...prev, { question: data, answer: "", feedback: null}]);
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex(history.length); //see for loop
     } catch (err) {
       console.error(err);
       alert("Could not load next question -- check the Flask backend is running, or try again in a moment.");
@@ -99,8 +119,8 @@ export default function SessionPage({ params }) {
   }
 
   useEffect(() => {
-    fetchQuestion();
-  }, [questionId])
+    fetchSession();
+  }, [sessionId])
 
   return (
     <main className="max-w-xl mx-auto pt-16 px-6">
