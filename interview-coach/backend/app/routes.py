@@ -11,14 +11,17 @@ def create_session():
     """Start a new mock-interview session on a given topic."""
     data = request.get_json()
     topic = data.get("topic", "general software engineering")
+    difficulty = data.get("difficulty", 2)
 
-    session = Session(topic=topic)
+    session = Session(topic=topic, difficulty=difficulty)
     db.session.add(session)
     db.session.flush()
 
     try:
-        question_text = generate_question(topic)
-        question = Question(session_id=session.id, prompt=question_text)
+        generatedQuestion = generate_question(topic, difficulty)
+        question = Question(session_id=session.id,
+                            prompt = generatedQuestion.question,
+                            suggest_time_seconds=generatedQuestion.suggest_time_seconds,)
         db.session.add(question)
         db.session.commit()
     except Exception as e:
@@ -73,8 +76,10 @@ def read_question(question_id):
 def create_new_question(session_id):
     session = Session.query.get_or_404(session_id)
 
-    question_text = generate_question(session.topic)
-    question = Question(session_id=session.id, prompt=question_text)
+    generatedQuestion = generate_question(session.topic, session.difficulty)
+    question = Question(session_id=session.id, 
+                        prompt=generatedQuestion.question,
+                        suggest_time_seconds=generatedQuestion.suggest_time_seconds,)
     db.session.add(question)
     db.session.commit()
 
