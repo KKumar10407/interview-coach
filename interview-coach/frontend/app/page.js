@@ -5,8 +5,29 @@ import { useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
 
+function SegmentedToggle({ options, value, onChange}){
+  return (
+    <div className="flex rounded-lg border border-slate-800 overflow-hidden mb-4">
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={`flex-1 py-2 text-sm font-medium transition ${
+            value === opt.value ? "bg-slate-100 text-slate-950" : "bg-slate-900 text-slate-400 hover: text-slate-200"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))};
+    </div>
+  );
+}
+
 export default function Home() {
   const [topic, setTopic] = useState("");
+  const [difficulty, setDifficulty] = useState(2); //diff is set 2 medium
+  const [timerMode, setTimerMode] = useState("countdown"); //diff id set to countdown by default
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -17,10 +38,11 @@ export default function Home() {
       const res = await fetch(`${API_BASE}/sessions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, difficulty }),
       });
       const data = await res.json();
-      router.push(`/session/${data.session.id}?questionId=${data.question.id}`);
+      console.log(data);
+      router.push(`/session/${data.session.id}?questionId=${data.question.id}&timerMode=${timerMode}`);
     } catch (err) {
       console.error(err);
       alert("Could not start session -- is the Flask backend running on :5000?");
@@ -43,6 +65,30 @@ export default function Home() {
         onChange={(e) => setTopic(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && startSession()}
       />
+
+      <p className="text-slate-500 text-sm mb-1">Difficulty</p>
+      <SegmentedToggle
+        options={[
+          { value: 1, label: "Easy"},
+          { value: 2, label: "Medium" },
+          { value: 3, label: "Hard"},
+        ]}
+        value={difficulty}
+        onChange={setDifficulty}
+      />
+
+      <p className="text-slate-500 text-sm mb-1">Difficulty</p>
+      <SegmentedToggle
+        options={[
+          { value: "none", label: "No timer"},
+          { value: "countdown", label: "Count down" },
+          { value: "countup", label: "Count up"},
+        ]}
+        value={timerMode}
+        onChange={setTimerMode}
+      />
+
+
 
       <button
         onClick={startSession}
