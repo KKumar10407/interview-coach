@@ -79,3 +79,11 @@ def create_new_question(session_id):
     db.session.commit()
 
     return jsonify(question.to_dict())
+
+@bp.route("/sessions/<int:session_id>/full", methods = ["GET"])
+def read_session_full(session_id):
+    session = Session.query.get_or_404(session_id)
+    return jsonify({
+        **session.to_dict(),
+        "questions": [q.to_dict() for q in session.questions],
+    })

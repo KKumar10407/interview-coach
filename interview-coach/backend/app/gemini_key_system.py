@@ -9,19 +9,30 @@ client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 MODEL = "gemini-3.5-flash-lite"  # free tier model
 
+class GeneratedQuestion(BaseModel):
+    question: str = Field(description="The interview question text")
+    suggest_time_seconds: int = Field(description="Reasonable time in seconds to answer this question, given its difficulty")
 
-def generate_question(topic: str) -> str:
+def generate_question(topic: str, difficulty: int) -> GeneratedQuestion:
     """Ask Gemini for one realistic interview question on a given topic."""
+    set_difficulty = {1: "easy", 2: "medium", 3: "hard"}[difficulty]
+    prompt = (
+        f"Generate one realistic junior software engineer interview "
+        f"question about '{topic}' at {set_difficulty} difficulty. "
+        f"Also estimate a reasonable time limit, in seconds, for a "
+        f"candidate to answer it well."
+    )
+
+
     response = client.models.generate_content(
         model=MODEL,
-        contents=(
-            f"Generate one realistic junior software engineer interview "
-            f"question about '{topic}'. Return ONLY the question text, "
-            f"nothing else."
-        ),
+        contents= prompt,
+        config={
+            "response_mime_type": "application/json",
+            "response_schema": GeneratedQuestion,
+        }
     )
-    return response.text.strip()
-
+    return GeneratedQuestion.model_validate_json(response.text.strip())
 
 class InterviewFeedback(BaseModel):
     correctness_score: int = Field(description="0-10, technical accuracy")
