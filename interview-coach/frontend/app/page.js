@@ -14,12 +14,12 @@ function SegmentedToggle({ options, value, onChange}){
           type="button"
           onClick={() => onChange(opt.value)}
           className={`flex-1 py-2 text-sm font-medium transition ${
-            value === opt.value ? "bg-slate-100 text-slate-950" : "bg-slate-900 text-slate-400 hover: text-slate-200"
+            value === opt.value ? "bg-slate-100 text-slate-950" : "bg-slate-900 text-slate-400 hover:text-slate-200"
           }`}
         >
           {opt.label}
         </button>
-      ))};
+      ))}
     </div>
   );
 }
@@ -66,27 +66,34 @@ export default function Home() {
         onKeyDown={(e) => e.key === "Enter" && startSession()}
       />
 
-      <p className="text-slate-500 text-sm mb-1">Difficulty</p>
-      <SegmentedToggle
-        options={[
-          { value: 1, label: "Easy"},
-          { value: 2, label: "Medium" },
-          { value: 3, label: "Hard"},
-        ]}
-        value={difficulty}
-        onChange={setDifficulty}
-      />
-
-      <p className="text-slate-500 text-sm mb-1">Difficulty</p>
-      <SegmentedToggle
-        options={[
-          { value: "none", label: "No timer"},
-          { value: "countdown", label: "Count down" },
-          { value: "countup", label: "Count up"},
-        ]}
-        value={timerMode}
-        onChange={setTimerMode}
-      />
+      
+      <div className="flex gap-4">
+        <div className="flex-1">
+          <p className="text-slate-500 text-center text-green-500 font-bold text-sm mb-1">Difficulty</p>
+          <SegmentedToggle
+            options={[
+            { value: 1, label: "Easy"},
+            { value: 2, label: "Medium" },
+            { value: 3, label: "Hard"},
+            ]}
+            value={difficulty}
+            onChange={setDifficulty}
+          />
+        </div>
+        <div className="flex-1">
+          <p className="text-slate-500 text-center text-green-500 font-bold text-sm mb-1">Timer</p>
+          <SegmentedToggle
+            options={[
+              { value: "none", label: "No timer"},
+              { value: "countdown", label: "Count down" },
+              { value: "countup", label: "Count up"},
+            ]}
+            value={timerMode}
+            onChange={setTimerMode}
+          />
+        </div>
+      </div>
+      
 
 
 

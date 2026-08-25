@@ -10,11 +10,13 @@ export default function SessionPage({ params }) {
 
   const questionId = searchParams.get("questionId");
   const sessionId = params.id;
+  const timerMode = searchParams.get("timerMode") || "none";
   //const questionText = searchParams.get("q") || "Loading question…";
 
   const [history, setHistory] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [submitting, setSubmitting] = useState(false);
+  const [timeValue, setTimeValue] = useState(null);
 
   const current = history[currentIndex] || null;
   const question = current ? current.question : null;
