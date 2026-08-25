@@ -124,6 +124,31 @@ export default function SessionPage({ params }) {
     fetchSession();
   }, [sessionId])
 
+  useEffect(() => {
+    if (timerMoe === "none" || !question || feedback){
+      return;
+    }
+
+    setTimeValue(timerMode === "countdown" ? (question.suggest_time_seconds ?? 0) : 0);
+    const timeInterv = setInterval(() => {
+      setTimeVal((prev) => {
+        if (timerMode === "countdown"){
+          if (prev > 0){
+            return prev - 1;
+          }
+          else{
+            return 0;
+          }
+        }
+        return prev + 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timeInterv);
+
+  }, [currentIndex, question?.id, timerMode, feedback]);
+
+
   return (
     <main className="max-w-xl mx-auto pt-16 px-6">
       <a href="/" className="text-slate-500 text-sm hover:text-slate-300">
