@@ -30,6 +30,13 @@ export default function SessionPage({ params }) {
     );
   }
 
+  function formatTime(totalSeconds){
+    const seconds = Math.max(0, totalSeconds);
+    const minutes = Math.floor(0, totalSeconds);
+    const remainder = s % 60;
+    return `${m}:${remainder.toString().padStart(2,"0")}`;
+  }
+
   //Changing to normal constants to allow easy movement through the session history
   // const [answer, setAnswer] = useState("");
   // const [question, setQuestion] = useState(null) //creates a new box called question and can fil it with setQuestion
@@ -154,6 +161,20 @@ export default function SessionPage({ params }) {
       <a href="/" className="text-slate-500 text-sm hover:text-slate-300">
         ← new session
       </a>
+
+
+      <div className="mt-6 mb-6 rounded-lg bg=slate=900 border border-slate-800 p-5">
+        <div className="flex justify-between items-start mb-1">
+          <p className="text-slate-500 text-sm">Question</p>
+            {timerMode !== "none" && timeValue !== null && (
+              <p className={`text-sm font-medium ${timerMode === "countdown" && timeValue <= 10 ? "text-red-400" : "text-slate-500"}`}>
+                {timerMode === "countdown" ? "Time left " : "Time elapsed "}
+                {formatTime(timeValue)}
+              </p>   
+            )}
+        </div>
+        <p className="text-lg">{question ? question.prompt : "Loading question..."}</p>
+      </div>
 
       <div className="mt-6 mb-6 rounded-lg bg-slate-900 border border-slate-800 p-5">
         <p className="text-slate-500 text-sm mb-1">Question</p>
