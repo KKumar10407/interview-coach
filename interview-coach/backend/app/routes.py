@@ -37,6 +37,8 @@ def submit_answer(question_id):
     """Submit an answer to a question and get back structured, scored feedback."""
     data = request.get_json()
     answer_text = data.get("answer", "")
+    time_taken_seconds = data.get("time_taken_seconds")
+    went_overtime = data.get("went_overtime", False)
 
     question = Question.query.get_or_404(question_id)
     feedback = evaluate_answer(question.prompt, answer_text)
@@ -45,6 +47,8 @@ def submit_answer(question_id):
     question.correctness_score = feedback.correctness_score
     question.communication_score = feedback.communication_score
     question.feedback = feedback.feedback
+    question.time_taken_seconds = time_taken_seconds
+    question.went_overtime = went_overtime
     db.session.commit()
 
     return jsonify(question.to_dict())
@@ -52,7 +56,7 @@ def submit_answer(question_id):
 
 @bp.route("/sessions", methods=["GET"])
 def list_sessions():
-    """Session history -- this is what feeds the score-over-time dashboard."""
+    """Session history -- feeds the score-over-time dashboard."""
     sessions = Session.query.order_by(Session.created_at.desc()).all()
     result = []
     for s in sessions:
