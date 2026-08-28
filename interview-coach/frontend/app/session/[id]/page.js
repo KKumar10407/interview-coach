@@ -32,9 +32,9 @@ export default function SessionPage({ params }) {
 
   function formatTime(totalSeconds){
     const seconds = Math.max(0, totalSeconds);
-    const minutes = Math.floor(0, totalSeconds);
-    const remainder = s % 60;
-    return `${m}:${remainder.toString().padStart(2,"0")}`;
+    const minutes = Math.floor(seconds / 60);
+    const remainder = seconds % 60;
+    return `${minutes}:${remainder.toString().padStart(2,"0")}`;
   }
 
   //Changing to normal constants to allow easy movement through the session history
@@ -132,13 +132,13 @@ export default function SessionPage({ params }) {
   }, [sessionId])
 
   useEffect(() => {
-    if (timerMoe === "none" || !question || feedback){
+    if (timerMode === "none" || !question || feedback){
       return;
     }
 
     setTimeValue(timerMode === "countdown" ? (question.suggest_time_seconds ?? 0) : 0);
     const timeInterv = setInterval(() => {
-      setTimeVal((prev) => {
+      setTimeValue((prev) => {
         if (timerMode === "countdown"){
           if (prev > 0){
             return prev - 1;
@@ -163,7 +163,7 @@ export default function SessionPage({ params }) {
       </a>
 
 
-      <div className="mt-6 mb-6 rounded-lg bg=slate=900 border border-slate-800 p-5">
+      <div className="mt-6 mb-6 rounded-lg bg-slate-900 border border-slate-800 p-5">
         <div className="flex justify-between items-start mb-1">
           <p className="text-slate-500 text-sm">Question</p>
             {timerMode !== "none" && timeValue !== null && (
@@ -176,11 +176,11 @@ export default function SessionPage({ params }) {
         <p className="text-lg">{question ? question.prompt : "Loading question..."}</p>
       </div>
 
-      <div className="mt-6 mb-6 rounded-lg bg-slate-900 border border-slate-800 p-5">
+      {/* <div className="mt-6 mb-6 rounded-lg bg-slate-900 border border-slate-800 p-5">
         <p className="text-slate-500 text-sm mb-1">Question</p>
         
         <p className="text-lg">{question ? question.prompt : "Loading question..."}</p>
-      </div>
+      </div> */}
 
       {!feedback ? (
         <>

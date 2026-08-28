@@ -42,6 +42,8 @@ class Question(db.Model):
             "answer_text": self.answer_text,
             "correctness_score": self.correctness_score,
             "suggest_time_seconds": self.suggest_time_seconds,
+            "time_taken_seconds" : self.time_taken_seconds,
+            "went_overtime": self.went_overtime,
             "communication_score": self.communication_score,
             "feedback": self.feedback,
         }
