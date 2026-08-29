@@ -53,6 +53,11 @@ export default function Home() {
 
   return (
     <main className="max-w-xl mx-auto pt-24 px-6">
+      <a href="/history"
+        className="absolute top-6 right-6 rounded-lg bg-slate-800 text-slate-100 text-sm font-medium px-4 py-2 hover:bg-slate-700 transition">
+        History →
+      </a>
+      
       <h1 className="text-3xl font-semibold mb-2">Interview Coach</h1>
       <p className="text-slate-400 mb-8">
         Pick a topic. Get a real question. Get scored, specific feedback.

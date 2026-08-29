@@ -53,6 +53,10 @@ export default function HistoryPage() {
 
     return (
         <main className="max-w-2xl mx-auto pt-16 px-6 pb-16">
+            <a href="/"
+            className="absolute top-6 left-6 rounded-lg bg-slate-800 text-slate-100 text-sm font-medium px-4 py-2 hover:bg-slate-700 transition">
+                ← Back to Home
+            </a>
             <h1 className="text-2xl font-semibold mb-6">Session History</h1>
 
             <div className="space-y-3">
