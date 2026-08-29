@@ -16,12 +16,15 @@ export default function SessionPage({ params }) {
   const [history, setHistory] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [submitting, setSubmitting] = useState(false);
-  const [timeValue, setTimeValue] = useState(null);
+  const [showTimesUp, setShowTimesUp] = useState(false); //if time runs out
+  //const [timeValue, setTimeValue] = useState(null);
 
   const current = history[currentIndex] || null;
   const question = current ? current.question : null;
   const answer = current ? current.answer : "";
   const feedback = current ? current.feedback : null;
+  const timeValue = current ? current.timerValue ?? null : null;
+  const overtime = current ? current.overtime ?? false : false;
 
   //allows for the answer to be updated if we went back previously
   function updateAnswer(newAnswer){
@@ -43,14 +46,38 @@ export default function SessionPage({ params }) {
   // const [feedback, setFeedback] = useState(null);
   // const [submitting, setSubmitting] = useState(false);
 
+  function continueTimeUp(){
+    setHistory(prev =>
+      prev.map((entry, i) => (i === currentIndex ? {...entry, overtime: true} : entry))
+    );
+  }
+
+  function computeTimeAfterSubmit(){
+    if (timerMode === "none" || timeValue === null){
+      return { time_taken_seconds: null, went_overtime: false};
+    }
+    if (timerMode === "countdown"){
+      if (overtime){
+        return { time_taken_seconds: timeValue, went_overtime: true};
+      }
+      const suggestedTime = question.suggest_time_seconds ?? 0;
+      const elapsedTime = suggestedTime - timeValue;
+      return { time_taken_seconds: elapsedTime, went_overtime: false};
+    }
+    //for countup:
+    return { time_taken_seconds: timeValue, went_overtime: false };
+
+  }
+
   async function submitAnswer() {
     if (!answer.trim()) return;
     setSubmitting(true);
     try {
+      const { time_taken_seconds, went_overtime } = computeTimeAfterSubmit();
       const res = await fetch(`${API_BASE}/questions/${question.id}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answer }),
+        body: JSON.stringify({ answer, time_taken_seconds, went_overtime }),
       });
 
       if (!res.ok) {
@@ -77,6 +104,8 @@ export default function SessionPage({ params }) {
       question: q,
       answer: q.answer_text || "",
       feedback: q.correctness_score == null ? null : q,
+      timerValue : null,
+      overtime: false,
     }));
 
     setHistory(currHistory);
@@ -89,7 +118,7 @@ export default function SessionPage({ params }) {
   async function fetchQuestion(){
     const res = await fetch(`${API_BASE}/questions/${questionId}`)
     const data = await res.json();
-    setHistory([{question: data.question, answer: "", feedback: null}]);
+    setHistory([{question: data.question, answer: "", feedback: null, timerValue: null, overtime: false}]);
     setCurrentIndex(0); 
   }
 
@@ -112,8 +141,7 @@ export default function SessionPage({ params }) {
       }
 
       const data = await res.json();
-      setHistory(prev => [...prev, { question: data, answer: "", feedback: null}]);
-      setCurrentIndex(history.length); //see for loop
+      setHistory(prev => [...prev, { question: data, answer: "", feedback: null}]);      setCurrentIndex(history.length); //see for loop
     } catch (err) {
       console.error(err);
       alert("Could not load next question -- check the Flask backend is running, or try again in a moment.");
@@ -128,33 +156,88 @@ export default function SessionPage({ params }) {
   }
 
   useEffect(() => {
-    fetchSession();
-  }, [sessionId])
+    let ignore = false;
+
+    async function load(){
+      const res = await fetch(`${API_BASE}/sessions/${sessionId}/full`);
+      const data = await res.json();
+      if (ignore){
+        return;
+      }
+      
+      const currHistory = data.questions.map(q => ({
+        question: q,
+        answer: q.answer_text || "",
+        feedback: q.correctness_score == null ? null : q,
+        timerValue: null,
+        overtime: false,
+      }));
+
+      setHistory(currHistory);
+      const initIndex = currHistory.findIndex(entry => String(entry.question.id) === String(questionId));
+      setCurrentIndex(initIndex !== -1 ? initIndex : 0);
+    }
+
+    load();
+    return () => { ignore = true; };
+
+  }, [sessionId]);
 
   useEffect(() => {
     if (timerMode === "none" || !question || feedback){
       return;
     }
 
-    setTimeValue(timerMode === "countdown" ? (question.suggest_time_seconds ?? 0) : 0);
+    const tempIndex = currentIndex;
+
+    if (current.timerValue === null || current.timerValue === undefined){
+      const initTime = timerMode === "countdown" ? (question.suggest_time_seconds ?? 0) : 0;
+      setHistory(prev =>
+        prev.map((e,i) => (i===tempIndex ? {...e, timerValue: initTime, overtime: false} : e))
+      );
+    }
+
+
+    //setTimeValue(timerMode === "countdown" ? (question.suggest_time_seconds ?? 0) : 0);
     const timeInterv = setInterval(() => {
-      setTimeValue((prev) => {
-        if (timerMode === "countdown"){
-          if (prev > 0){
-            return prev - 1;
-          }
-          else{
-            return 0;
-          }
+      setHistory(prev => {
+        const entry = prev[tempIndex];
+        if (!entry){
+          return prev;
         }
-        return prev + 1;
+        const { timerValue: value, overtime: isOvertime } = entry;
+        
+        if (timerMode == "countdown" && !isOvertime){
+          if (value <= 0){
+            return prev; //pause at zero, wait on Continue button
+          }
+          return prev.map((e,i) => (i === tempIndex ? { ...e, timerValue: value - 1 } : e));
+        }
+        //for overtime or countup
+        return prev.map((e,i) => (i === tempIndex ? { ...e, timerValue: value + 1 } : e));
       });
+      
+      // setTimeValue((prev) => {
+      //   if (timerMode === "countdown"){
+      //     if (prev > 0){
+      //       return prev - 1;
+      //     }
+      //     else{
+      //       return 0;
+      //     }
+      //   }
+      //   return prev + 1;
+      // });
     }, 1000);
 
     return () => clearInterval(timeInterv);
 
   }, [currentIndex, question?.id, timerMode, feedback]);
 
+  useEffect(() => {
+    const timedOut = timerMode === "countdown" && !overtime && timeValue === 0 && question && !feedback;
+    setShowTimesUp(!!timedOut) //convert to boolean !!
+  }, [timeValue, overtime, timerMode, feedback, question]);
 
   return (
     <main className="max-w-xl mx-auto pt-16 px-6">
@@ -167,8 +250,9 @@ export default function SessionPage({ params }) {
         <div className="flex justify-between items-start mb-1">
           <p className="text-slate-500 text-sm">Question</p>
             {timerMode !== "none" && timeValue !== null && (
-              <p className={`text-sm font-medium ${timerMode === "countdown" && timeValue <= 10 ? "text-red-400" : "text-slate-500"}`}>
-                {timerMode === "countdown" ? "Time left " : "Time elapsed "}
+              <p className={`text-sm font-medium ${overtime || (timerMode === "countdown" && timeValue <= 10) ? "text-red-400" : "text-slate-500"}`}>
+                
+                {timerMode === "countdown" ? (overtime ? "Overtime " : "Time left ") : "Time elapsed "}
                 {formatTime(timeValue)}
               </p>   
             )}
@@ -227,6 +311,24 @@ export default function SessionPage({ params }) {
           {feedback ? "Next question" : "Skip"}
         </button>
       </div>
+
+      {showTimesUp && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center px-6 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 max-w-sm w-full text-center">
+            <p className="text-xl font-semibold mb-2">Time&apos;s up!</p>
+            <p className="text-slate-400 mb-6">
+              You can keep going, but it&apos;ll be marked as overtime.
+            </p>
+            <button
+              onClick={continueTimeUp}
+              className="w-full rounded-lg bg-slate-100 text-slate-950 font-medium py-2.5 hover:bg-white transition"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }
