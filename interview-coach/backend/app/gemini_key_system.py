@@ -19,6 +19,9 @@ def generate_question(topic: str, difficulty: int) -> GeneratedQuestion:
     prompt = (
         f"Generate one realistic junior software engineer interview "
         f"question about '{topic}' at {set_difficulty} difficulty. "
+        f"Avoid the most commonly cited textbook example for this topic -- "
+        f"generate something a real interviewer might ask that isn't the "
+        f"first thing that comes to mind. "
         f"Also estimate a reasonable time limit, in seconds, for a "
         f"candidate to answer it well."
     )
@@ -30,6 +33,7 @@ def generate_question(topic: str, difficulty: int) -> GeneratedQuestion:
         config={
             "response_mime_type": "application/json",
             "response_schema": GeneratedQuestion,
+            "temperature": 1.3, #prevents a highly generic generated prompt
         }
     )
     return GeneratedQuestion.model_validate_json(response.text.strip())

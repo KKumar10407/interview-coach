@@ -5,6 +5,23 @@ import { useState, useEffect } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
 
+function formatTime(totalSeconds){
+    const seconds = Math.max(0, totalSeconds);
+    const minutes = Math.floor(seconds / 60);
+    const remainder = seconds % 60;
+    return `${minutes}:${remainder.toString().padStart(2,"0")}`;
+}
+
+function timeLabel(question){
+    if (question.time_taken_seconds == null){
+        return null;
+    }
+    if (question.went_overtime){
+        return `Overtime - ${question.time_taken_seconds} seconds`;
+    }
+    return formatTime(question.time_taken_seconds);
+}
+
 export default function HistoryPage() {
     const [list, setList] = useState([]);
     const [openSessions, setOpenSessions] = useState(new Set()); 
@@ -56,15 +73,20 @@ export default function HistoryPage() {
                                     {session.questions.map((question, index) => (
                                         <div
                                             key={question.id}
-                                            className="flex items-center justify-between px-5 py-3 border-b border-slate-800 last:border-b-0"
-                                        >
+                                            className="flex items-center justify-between px-5 py-3 border-b border-slate-800 last:border-b-0">
                                             <span className="text-slate-300">Question {index + 1}</span>
 
                                             {question.correctness_score === null ? (
                                                 <span className="text-slate-500 italic">Incomplete</span>
                                             ) : (
-                                                <span className="text-slate-300">
-                                                    {question.correctness_score}/10 &nbsp; {question.communication_score}/10
+
+                                                <span className="text-slate-300 flex item-center gap-3">
+                                                    <span>{question.correctness_score}/10 &nbsp; {question.communication_score}/10</span>
+                                                    {timeLabel(question) && (
+                                                        <span className={question.went_overtime ? "text-red-400 text-xs" : "text-slate-500 text-xs"}>
+                                                            {timeLabel(question)}
+                                                        </span>
+                                                    )}
                                                 </span>
                                             )}
                                         <button onClick={() => {setSelectedQ(question); console.log(selectedQ);}}
@@ -121,6 +143,14 @@ export default function HistoryPage() {
                                 <p className="text-slate-500 text-xs">Communication</p>
                                 <p className="text-x1 font-semibold">{selectedQ.communication_score}/10</p>
                             </div>
+                            {timeLabel(selectedQ) && (
+                                <div>
+                                    <p className="text-slate-500 text-xs">Time</p>
+                                    <p className={`text-x1 font-semibold ${selectedQ.went_overtime ? "text-red-400" : ""}`}>
+                                        {timeLabel(selectedQ)}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <p className="text-slate-500 text-sm mb-1">Feedback</p>
