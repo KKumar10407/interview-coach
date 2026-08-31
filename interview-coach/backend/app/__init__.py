@@ -10,6 +10,8 @@ db = SQLAlchemy()
 
 
 def create_app():
+    app = Flask(__name__)
+
     database_url = os.environ.get("DATABASE_URL", "sqlite:///dev.db")
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
